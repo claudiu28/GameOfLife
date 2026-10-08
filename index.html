@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Game of Life</title>
+    <link rel="stylesheet" href="index.css" type="text/css">
+</head>
+<body>
+
+<h1>Game of Life</h1>
+
+<div class="controls">
+    <button id="btnStart">Start</button>
+    <button id="btnStep">Pas</button>
+    <button id="btnClear">Clear Board</button>
+
+    <label for="patternSelect">Models</label><select id="patternSelect">
+        <option value="">-- Choose models --</option>
+        <option value="block">Block (static)</option>
+        <option value="beehive">Beehive (static)</option>
+        <option value="loaf">Loaf (static)</option>
+        <option value="boat">Boat (static)</option>
+        <option value="blinker">Blinker (oscillating)</option>
+        <option value="toad">Toad (oscillating)</option>
+        <option value="beacon">Beacon (oscillating)</option>
+        <option value="glider">Glider (dynamic)</option>
+        <option value="lwss">Lightweight spaceship (dynamic)</option>
+    </select>
+
+    <label>
+        Speed:
+        <input type="range" id="speedSlider" min="20" max="1000" value="150">
+        <span id="speedLabel">150</span> ms
+    </label>
+</div>
+
+<canvas id="board"></canvas>
+
+<div class="info">
+    Generation: <b id="genLabel">0</b> &nbsp;|&nbsp; Cell alive: <b id="popLabel">0</b>
+</div>
+<p>Click on a cell to change it (alive / dead)</p>
+</body>
+<script src="index.js"></script>
+</html>
