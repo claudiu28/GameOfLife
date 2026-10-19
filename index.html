@@ -1,46 +1,42 @@
 <!DOCTYPE html>
-<html lang="ro">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Game of Life</title>
     <link rel="stylesheet" href="index.css" type="text/css">
 </head>
+
 <body>
+    <div class="controls">
+        <button id="start">Start</button>
+        <button id="step">Pas</button>
+        <button id="clear">Clear Board</button>
+        <button id="randomize">Randomize</button>
 
-<h1>Game of Life</h1>
+        <label for="select">Models: </label>
+        <select id="select">
+            <option value="">-- Choose models --</option>
+            <option value="block">Block (static)</option>
+            <option value="beehive">Beehive (static)</option>
+            <option value="loaf">Loaf (static)</option>
+            <option value="boat">Boat (static)</option>
+            <option value="blinker">Blinker (oscillating)</option>
+            <option value="toad">Toad (oscillating)</option>
+            <option value="beacon">Beacon (oscillating)</option>
+            <option value="glider">Glider (dynamic)</option>
+            <option value="lwss">Lightweight spaceship (dynamic)</option>
+        </select>
 
-<div class="controls">
-    <button id="btnStart">Start</button>
-    <button id="btnStep">Pas</button>
-    <button id="btnClear">Clear Board</button>
+    </div>
 
-    <label for="patternSelect">Models</label><select id="patternSelect">
-        <option value="">-- Choose models --</option>
-        <option value="block">Block (static)</option>
-        <option value="beehive">Beehive (static)</option>
-        <option value="loaf">Loaf (static)</option>
-        <option value="boat">Boat (static)</option>
-        <option value="blinker">Blinker (oscillating)</option>
-        <option value="toad">Toad (oscillating)</option>
-        <option value="beacon">Beacon (oscillating)</option>
-        <option value="glider">Glider (dynamic)</option>
-        <option value="lwss">Lightweight spaceship (dynamic)</option>
-    </select>
+    <canvas id="board"></canvas>
 
-    <label>
-        Speed:
-        <input type="range" id="speedSlider" min="20" max="1000" value="150">
-        <span id="speedLabel">150</span> ms
-    </label>
-</div>
-
-<canvas id="board"></canvas>
-
-<div class="info">
-    Generation: <b id="genLabel">0</b> &nbsp;|&nbsp; Cell alive: <b id="popLabel">0</b>
-</div>
-<p>Click on a cell to change it (alive / dead)</p>
+    <div class="info">
+        Generation: <b id="generation">0</b></br>
+        Cells alive: <b id="population">0</b>
+    </div>
+    <p>Speed: 1 second per generation</p>
+    <script src="const.js"></script>
+    <script src="index.js"></script>
 </body>
-<script src="index.js"></script>
+
 </html>

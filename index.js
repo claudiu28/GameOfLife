@@ -1,225 +1,202 @@
-const ROWS = 40;
-const COLS = 60;
-const CELL_SIZE = 14;
-
-const DEAD = 0;
-const ALIVE = 1;
-
-let grid = createEmptyGrid();
+let grid = createGrid();
 let generation = 0;
 let running = false;
 let timer = null;
-let speed = 150;
 
 const canvas = document.getElementById("board");
-const ctx = canvas.getContext("2d");
+const context = canvas.getContext("2d");
+console.log(context);
+
 canvas.width = COLS * CELL_SIZE;
 canvas.height = ROWS * CELL_SIZE;
+console.log(canvas.width, canvas.height);
 
-
-const PATTERNS = {
-    block: [[0, 0], [0, 1], [1, 0], [1, 1]],
-    beehive: [[0, 1], [0, 2], [1, 0], [1, 3], [2, 1], [2, 2]],
-    loaf: [[0, 1], [0, 2], [1, 0], [1, 3], [2, 1], [2, 3], [3, 2]],
-    boat: [[0, 0], [0, 1], [1, 0], [1, 2], [2, 1]],
-    blinker: [[0, 0], [1, 0], [2, 0]],
-    toad: [[0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2]],
-    beacon: [[0, 0], [0, 1], [1, 0], [2, 3], [3, 2], [3, 3]],
-    glider: [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
-    lwss: [[0, 1], [0, 4], [1, 0], [2, 0], [2, 4], [3, 0], [3, 1], [3, 2], [3, 3]]
-};
-
-
-function createEmptyGrid() {
-    const newGrid = [];
-    for (let row = 0; row < ROWS; row++) {
-        const line = [];
-        for (let col = 0; col < COLS; col++) {
-            line.push(DEAD);
-        }
-        newGrid.push(line);
+function createGrid() {
+  const new_grid = [];
+  for (let i = 0; i < ROWS; i++) {
+    const line = [];
+    for (let j = 0; j < COLS; j++) {
+      line.push(DEAD);
     }
-    return newGrid;
+    new_grid.push(line);
+  }
+  return new_grid;
 }
 
-
-function countAliveNeighbors(g, row, col) {
-    let count = 0;
-    for (let dRow = -1; dRow <= 1; dRow++) {
-        for (let dCol = -1; dCol <= 1; dCol++) {
-            if (dRow === 0 && dCol === 0) {
-                continue;
-            }
-            const r = (row + dRow + ROWS) % ROWS;
-            const c = (col + dCol + COLS) % COLS;
-            if (g[r][c] === ALIVE) {
-                count++;
-            }
-        }
+function numberOfAliveNeighbors(grid, line, column) {
+  let num = 0;
+  for (const [di, dj] of NEIGHBORS) {
+    const r = (line + di + ROWS) % ROWS;
+    const c = (column + dj + COLS) % COLS;
+    if (grid[r][c] === ALIVE) {
+      num++;
     }
-    return count;
+  }
+  return num;
 }
 
-function computeNextGeneration(g) {
-    const next = createEmptyGrid();
+function computeGeneration(grid) {
+  const next = createGrid();
 
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            const state = g[row][col];
-            const neighbors = countAliveNeighbors(g, row, col);
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      const current = grid[i][j];
+      const num = numberOfAliveNeighbors(grid, i, j);
 
-            if (state === ALIVE) {
-                if (neighbors >= 4) {
-                    next[row][col] = DEAD;
-                } else if (neighbors <= 1) {
-                    next[row][col] = DEAD;
-                } else {
-                    next[row][col] = ALIVE;
-                }
-            } else {
-                if (neighbors === 3) {
-                    next[row][col] = ALIVE;
-                } else {
-                    next[row][col] = DEAD;
-                }
-            }
+      if (current === ALIVE) {
+        if (num >= 4) {
+          next[i][j] = DEAD;
+        } else if (num <= 1) {
+          next[i][j] = DEAD;
+        } else {
+          next[i][j] = ALIVE;
         }
+      } else {
+        if (num === 3) {
+          next[i][j] = ALIVE;
+        } else {
+          next[i][j] = DEAD;
+        }
+      }
     }
-    return next;
+  }
+  return next;
 }
 
-function countPopulation(g) {
-    let total = 0;
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            total += g[row][col];
-        }
+function population(grid) {
+  let total = 0;
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      total += grid[i][j];
     }
-    return total;
+  }
+  return total;
 }
 
 function draw() {
+  context.fillStyle = "white";
+  context.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#333";
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            if (grid[row][col] === ALIVE) {
-                ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            }
-        }
+  context.fillStyle = "#333";
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      if (grid[i][j] === ALIVE) {
+        context.fillRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
     }
+  }
 
-    ctx.strokeStyle = "#ddd";
-    ctx.lineWidth = 1;
-    for (let col = 0; col <= COLS; col++) {
-        ctx.beginPath();
-        ctx.moveTo(col * CELL_SIZE + 0.5, 0);
-        ctx.lineTo(col * CELL_SIZE + 0.5, canvas.height);
-        ctx.stroke();
-    }
-    for (let row = 0; row <= ROWS; row++) {
-        ctx.beginPath();
-        ctx.moveTo(0, row * CELL_SIZE + 0.5);
-        ctx.lineTo(canvas.width, row * CELL_SIZE + 0.5);
-        ctx.stroke();
-    }
+  context.strokeStyle = "gray";
+  context.lineWidth = 1;
+  context.beginPath();
+  for (let j = 0; j <= COLS; j++) {
+    context.moveTo(j * CELL_SIZE, 0);
+    context.lineTo(j * CELL_SIZE, canvas.height);
+  }
+  for (let i = 0; i <= ROWS; i++) {
+    context.moveTo(0, i * CELL_SIZE);
+    context.lineTo(canvas.width, i * CELL_SIZE);
+  }
+  context.stroke();
 
-    document.getElementById("genLabel").textContent = generation;
-    document.getElementById("popLabel").textContent = String(countPopulation(grid));
+  document.getElementById("generation").textContent = generation;
+  document.getElementById("population").textContent = String(population(grid));
 }
 
 function step() {
-    grid = computeNextGeneration(grid);
-    generation++;
-    draw();
+  generation = generation + 1;
+  grid = computeGeneration(grid);
+  draw();
 }
 
 function start() {
-    running = true;
-    timer = setInterval(step, speed);
-    document.getElementById("btnStart").textContent = "Pause";
+  if (running) return;
+  running = true;
+  timer = setInterval(step, SPEED);
+  document.getElementById("start").textContent = "Pause";
 }
 
 function stop() {
-    running = false;
-    clearInterval(timer);
-    document.getElementById("btnStart").textContent = "Start";
+  clearInterval(timer);
+  running = false;
+  document.getElementById("start").textContent = "Start";
 }
 
 function clearGrid() {
-    stop();
-    grid = createEmptyGrid();
-    generation = 0;
-    draw();
+  stop();
+  grid = createGrid();
+  generation = 0;
+  draw();
+}
+
+function randomize() {
+  stop();
+  grid = createGrid();
+  generation = 0;
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      if (Math.random() > 0.5) {
+        grid[i][j] = ALIVE;
+      } else {
+        grid[i][j] = DEAD;
+      }
+    }
+  }
+  draw();
 }
 
 function placePattern(name) {
-    const cells = PATTERNS[name];
-    if (!cells) {
-        return;
-    }
-    stop();
-    grid = createEmptyGrid();
-    generation = 0;
+  const cells = PATTERNS[name];
+  if (!cells) return;
 
-    const startRow = Math.floor(ROWS / 2) - 2;
-    const startCol = Math.floor(COLS / 2) - 2;
-    for (const [r, c] of cells) {
-        grid[startRow + r][startCol + c] = ALIVE;
-    }
-    draw();
+  stop();
+  grid = createGrid();
+  generation = 0;
+
+  const startRow = ROWS / 2;
+  const startCol = COLS / 2;
+
+  for (const [r, c] of cells) {
+    const i = startRow + r;
+    const j = startCol + c;
+    grid[i][j] = ALIVE;
+  }
+
+  draw();
 }
 
-
-document.getElementById("btnStart").addEventListener("click", function () {
-    if (running) {
-        stop();
-    } else {
-        start();
-    }
-});
-
-document.getElementById("btnStep").addEventListener("click", function () {
+document.getElementById("start").addEventListener("click", () => {
+  if (running) {
     stop();
-    step();
+  } else {
+    start();
+  }
 });
 
-document.getElementById("btnClear").addEventListener("click", clearGrid);
-
-document.getElementById("patternSelect").addEventListener("change", function () {
-    placePattern(this.value);
+document.getElementById("step").addEventListener("click", () => {
+  stop();
+  step();
 });
 
-document.getElementById("speedSlider").addEventListener("input", function () {
-    speed = Number(this.value);
-    document.getElementById("speedLabel").textContent = speed;
-    if (running) {
-        clearInterval(timer);
-        timer = setInterval(step, speed);
+document.getElementById("clear").addEventListener("click", clearGrid);
+document.getElementById("randomize").addEventListener("click", randomize);
+
+document.getElementById("select").addEventListener("change", (e) => {
+  placePattern(e.target.value);
+});
+
+canvas.addEventListener("click", (e) => {
+  const c = Math.floor(e.offsetX / CELL_SIZE);
+  const r = Math.floor(e.offsetY / CELL_SIZE);
+
+  if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+    if (grid[r][c] === ALIVE) {
+      grid[r][c] = DEAD;
+    } else {
+      grid[r][c] = ALIVE;
     }
-});
-
-canvas.addEventListener("click", function (event) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (event.clientX - rect.left) * scaleX;
-    const y = (event.clientY - rect.top) * scaleY;
-
-    const col = Math.floor(x / CELL_SIZE);
-    const row = Math.floor(y / CELL_SIZE);
-
-    if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
-        if (grid[row][col] === ALIVE) {
-            grid[row][col] = DEAD;
-        } else {
-            grid[row][col] = ALIVE;
-        }
-        draw();
-    }
+    draw();
+  }
 });
 
 draw();
